@@ -67,6 +67,8 @@ fn init_sio() {
 
     // lock
     lpc_outb(0x2e, 0xaa);
+
+    lpc_outb(0x3f8, 0xaa);
 }
 
 fn init_uart() {
@@ -74,17 +76,20 @@ fn init_uart() {
 
 struct Console {} // i forget what this is for?
 
+fn prlog(s : &str) {
+    for c in s.bytes() {
+            lpc_outb(0x3f8, c);
+    }
+}
+
 impl fmt::Write for Console {
     fn write_str(&mut self, s : &str) -> Result<(), fmt::Error> {
-        let uart_fifo : *mut u8 = 0x60300d00103f8 as *mut u8;
-
-        for c in "asdf\n".bytes() {
-                lpc_outb(0x3f8, c);
-        }
+        prlog(s);
 
         Ok(())
     }
 }
+
 
 #[no_mangle]
 pub fn _start(fdt_ptr : u64) -> ! {
@@ -92,11 +97,14 @@ pub fn _start(fdt_ptr : u64) -> ! {
 
     init_sio();
 
-    loop {
-        fmt::write(&mut cons, format_args!("hello {}\r\n", "world")).unwrap();
-//        fmt::write(&mut cons, format_args!("Hello {}!", "world")).unwrap();
-//            .expect("Error occurred while trying to write in String");
-     }
+    prlog("test\r\n");
+
+    //fmt::write(&mut cons, format_args!("hello \r\n", "world")).unwrap();
+    fmt::write(&mut cons, format_args!("hello \r\n")).unwrap();
+
+    prlog("tested\r\n");
+
+    loop {}
 }
 
 #[lang = "eh_personality"] extern fn eh_personality() {}
