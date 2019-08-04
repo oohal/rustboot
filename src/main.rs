@@ -5,42 +5,36 @@
 #![no_std]
 #![no_main]
 
+
 use core::intrinsics;
 use core::panic::PanicInfo;
 
 use core::fmt;
 use core::str;
 
-//#[no_mangle]
-#[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
-        unsafe { intrinsics::abort() }
-}
-
 extern {
-    fn mambo_write(buf : *const u8, length : usize);
     fn ohshit();
     fn inb(addr : u64) -> u8;
     fn outb(addr : u64, val : u8);
 }
 
 // LPC io space base addres
-const lpc_io_base : u64 = 0x60300d0010000;
+const LPC_IO_BASE : u64 = 0x60300d0010000;
 
 fn lpc_inb(reg : u16) -> u8 {
     unsafe {
-        inb(lpc_io_base + reg as u64)
+        inb(LPC_IO_BASE + reg as u64)
     }
 }
 
 fn lpc_outb(reg : u16, val : u8) {
     unsafe {
-        outb(lpc_io_base + reg as u64, val);
+        outb(LPC_IO_BASE + reg as u64, val);
     }
 }
 
+#[allow(dead_code)]
 fn sio_inb(reg : u8) -> u8{
-
     /* superio is accessed indirectly via an PIO interface at 0x2e, 0x2f */
     lpc_outb(0x2e, reg);
     lpc_inb(0x2f)
@@ -52,7 +46,6 @@ fn sio_outb(reg : u8, val : u8) {
 }
 
 fn init_sio() {
-
     lpc_outb(0x2e, 0xa5); // unlock superio
     lpc_outb(0x2e, 0xa5);
 
@@ -67,11 +60,6 @@ fn init_sio() {
 
     // lock
     lpc_outb(0x2e, 0xaa);
-
-    lpc_outb(0x3f8, 0xaa);
-}
-
-fn init_uart() {
 }
 
 struct Console {} // i forget what this is for?
@@ -90,21 +78,38 @@ impl fmt::Write for Console {
     }
 }
 
+//#[no_mangle]
+#[panic_handler]
+fn panic(_info: &PanicInfo) -> ! {
+
+        prlog("picnicked!\r\n");
+
+        prlog(_info.payload().downcast_ref::<&str>().unwrap());
+        prlog("fin!\r\n");
+
+        unsafe {
+            ohshit();
+            intrinsics::abort()
+        }
+}
 
 #[no_mangle]
-pub fn _start(fdt_ptr : u64) -> ! {
-    let mut cons = Console {};
+pub fn _start(_fdt_ptr : u64) -> ! {
+//    let mut cons = Console {};
 
     init_sio();
 
     prlog("test\r\n");
 
-    //fmt::write(&mut cons, format_args!("hello \r\n", "world")).unwrap();
-    fmt::write(&mut cons, format_args!("hello \r\n")).unwrap();
+    panic!("fuck");
+    /*
+    fmt::write(&mut cons, format_args!("hello \r\n", "world")).unwrap();
+//    fmt::write(&mut cons, format_args!("hello \r\n")).unwrap();
 
     prlog("tested\r\n");
 
-    loop {}
+    loop{}
+    */
 }
 
 #[lang = "eh_personality"] extern fn eh_personality() {}

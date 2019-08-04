@@ -79,14 +79,6 @@ _Unwind_Resume:
 stack_exhaused:
 	b .
 
-#if 0
-.global panic_fmt
-panic_fmt:
-	b .
-#endif
-
-#define MAMBO_CALL .long 0x000eaeb0
-
 .global ohshit
 ohshit:
 	attn
@@ -101,32 +93,3 @@ inb:
 outb:
 	stbcix r4, 0, r3
 	blr
-
-
-.global mambo_write
-mambo_write:
-	//LOAD_IMM64(r6, 0x60300d00103f8)
-	lis r29, 0x6
-	li  r29, 0x0300
-	sldi r29, r29, 32
-	lis r29, 0xd001
-	li  r29, 0x03f8
-	lbz r7, 0(r3)
-	stb r3, 0(r29)
-/*
-	mr r5,r4
-	mr r4,r3
-	li r3, 0
-	MAMBO_CALL
-*/
-	blr
-
-.global callthru0
-.global callthru1
-.global callthru2
-callthru0:
-callthru1:
-callthru2:
-	MAMBO_CALL
-	blr
-
