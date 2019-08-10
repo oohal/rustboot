@@ -81,10 +81,17 @@ impl fmt::Write for Console {
 //#[no_mangle]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
+    let mut cons = Console {};
 
         prlog("picnicked!\r\n");
 
-        prlog(_info.payload().downcast_ref::<&str>().unwrap());
+
+        if let Some(msg) = _info.location(){
+            fmt::write(&mut cons, format_args!("Panic at: {}:{}\r\n", msg.file(), msg.line()));
+        } else {
+            prlog("recursive panic?");
+        }
+
         prlog("fin!\r\n");
 
         unsafe {
