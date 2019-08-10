@@ -15,6 +15,7 @@
 .section ".head","ax"
 
 /* FIXME: process relocations */
+__head:
 .  = 0x0
 	b entry_point
 
@@ -29,20 +30,20 @@ entry_point:
 	// figure out the run address
 	bl 1f
 1: 	mflr r3
-        subi r3,r3,(1b - entry_point)
+        subi r3,r3,(1b - __head)
 
 	// all the cool kids are hard coding a toc pointer
 	// this is just .got + 0x8000, I need to fix the linker script at some point...
-	lis 	r2,(__toc_start - entry_point)@ha
-	addi 	r2,r2,(__toc_start - entry_point)@l
+	lis 	r2,(__toc_start - __head)@ha
+	addi 	r2,r2,(__toc_start - __head)@l
 	add 	r2,r2,r3 // add the load offset to the TOC pointer
 
 	// process the relocations
-	addis 	r4, r3, (__rela_dyn_start - entry_point)@ha
-	addi 	r4, r4, (__rela_dyn_start - entry_point)@l
+	addis 	r4, r3, (__rela_dyn_start - __head)@ha
+	addi 	r4, r4, (__rela_dyn_start - __head)@l
 
-	addis 	r5, r3, (__rela_dyn_end - entry_point)@ha
-	addi 	r5, r5, (__rela_dyn_end - entry_point)@l
+	addis 	r5, r3, (__rela_dyn_end - __head)@ha
+	addi 	r5, r5, (__rela_dyn_end - __head)@l
 
 reloc:	cmpd 	r4, r5
 	beq 1f
