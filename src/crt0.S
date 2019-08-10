@@ -63,7 +63,8 @@ reloc:	cmpd 	r4, r5
 	addi 	r4,r4,24
 	b  	reloc
 
-1:	bl _start
+1:	mr r3, r31
+	bl _start
 
 . = 0xe40
 	b .

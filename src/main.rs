@@ -101,7 +101,7 @@ fn panic(_info: &PanicInfo) -> ! {
 }
 
 #[no_mangle]
-pub fn _start(_fdt_ptr : u64) -> ! {
+pub fn _start(fdt_ptr : u64) -> ! {
 //    let mut cons = Console {};
 
     init_sio();
