@@ -90,7 +90,7 @@ fn panic(_info: &PanicInfo) -> ! {
 
 
         if let Some(msg) = _info.location(){
-            fmt::write(&mut cons, format_args!("Panic at: {}:{}\r\n", msg.file(), msg.line()));
+            write!(&mut cons, "Panic at: {}:{}\r\n", msg.file(), msg.line());
         } else {
             prlog("recursive panic?");
         }
