@@ -12,4 +12,5 @@ fdt = { path = "../fdt-0.0.1" }
 
 [dependencies]
 byteorder = { version = "1", default-features = false }
+memchr = { version = "2", default-features = false }
 fdt = "0.0.1"
