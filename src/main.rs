@@ -14,6 +14,7 @@ use core::fmt::Write;
 use core::str;
 
 use fdt::FDT;
+mod my_alloc;
 
 extern {
     fn ohshit();
@@ -170,6 +171,15 @@ pub fn _start(fdt_ptr : u64) -> ! {
 
     loop{};
 }
+
+// Declaration of the global memory allocator
+// NOTE the user must ensure that the memory region `[0x2000_0100, 0x2000_0200]`
+// is not used by other parts of the program
+#[global_allocator]
+static HEAP: my_alloc::BumpPointerAlloc = my_alloc::BumpPointerAlloc {
+    head: UnsafeCell::new(0x2000_0000),
+    end: 0x2001_0000,
+};
 
 #[lang = "eh_personality"] extern fn eh_personality() {}
 //#[lang = "panic_fmt"] fn panic_fmt() -> ! { loop {} }
