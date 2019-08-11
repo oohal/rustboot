@@ -101,6 +101,30 @@ fn panic(_info: &PanicInfo) -> ! {
 }
 
 #[no_mangle]
+pub fn memcpy(dst : *mut u8, src : *const u8, size : isize)
+{
+    unsafe {
+        for i in 0..size {
+            *dst.offset(i) = *src.offset(i);
+        }
+    }
+}
+
+#[no_mangle]
+pub fn memcmp(s1 : *mut u8, s2 : *const u8, size : isize) -> isize
+{
+    unsafe {
+        for i in 0..size {
+            if *s1.offset(i) != *s2.offset(i) {
+                return (*s1.offset(i) - *s2.offset(i)) as isize
+            }
+        }
+    }
+
+    return 0
+}
+
+#[no_mangle]
 pub fn _start(fdt_ptr : u64) -> ! {
 //    let mut cons = Console {};
 
