@@ -7,6 +7,9 @@ build = "build.rs"
 [build-dependencies]
 cc = "1.0"
 
+[patch.crates-io]
+fdt = { path = "../fdt-0.0.1" }
+
 [dependencies]
 byteorder = { version = "1", default-features = false }
 fdt = "0.0.1"
