@@ -65,7 +65,7 @@ fn init_sio() {
     lpc_outb(0x2e, 0xaa);
 }
 
-struct Console {} // i forget what this is for?
+struct Console;
 
 fn prlog(s : &str) {
     for c in s.bytes() {
