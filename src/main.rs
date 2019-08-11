@@ -85,13 +85,14 @@ pub fn memcmp(s1 : *mut u8, s2 : *const u8, size : isize) -> isize
 }
 
 #[no_mangle]
-pub fn _start(fdt_ptr : u64) -> ! {
+pub fn _start(base_addr : u64, fdt_ptr : u64) -> ! {
     let mut cons = Console {};
     let fdt;
 
     lpc::init_sio();
 
     write!(&mut cons, "FDT at: {:016x}\r\n", fdt_ptr);
+    write!(&mut cons, "Base at: {:016x}\r\n", base_addr);
 
     unsafe {
         fdt = FDT::from_raw(fdt_ptr as *const u8).unwrap();

@@ -63,7 +63,7 @@ reloc:	cmpd 	r4, r5
 	addi 	r4,r4,24
 	b  	reloc
 
-1:	mr r3, r31
+1:	mr r4, r31
 	bl _start
 
 . = 0xe40
@@ -85,6 +85,7 @@ stack_exhaused:
 ohshit:
 	attn
 
+# mmio accessors
 .global inb
 inb:
 	lbzcix r3, 0,r3
