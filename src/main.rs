@@ -9,71 +9,28 @@ use core::intrinsics;
 use core::panic::PanicInfo;
 use core::cell::UnsafeCell;
 
-use core::fmt;
-use core::fmt::Write;
-use core::str;
-
 use fdt::FDT;
 
 mod my_alloc;
+mod console;
 mod lpc;
 
 extern {
     fn ohshit();
 }
 
-struct Console;
-
-fn cons_puts(s : &str) {
-    for c in s.bytes() {
-            lpc::lpc_outb(0x3f8, c);
-    }
-}
-
-impl fmt::Write for Console {
-    fn write_str(&mut self, s : &str) -> Result<(), fmt::Error> {
-        cons_puts(s);
-
-        Ok(())
-    }
-}
-
-fn cons_fmt(args : fmt::Arguments) {
-	let mut cons = Console {};
-
-	write!(&mut cons, "{}", args);
-}
-
-
-// ripped from https://docs.rs/cortex-m-semihosting/0.3.4/src/cortex_m_semihosting/macros.rs.html#35-42
-#[macro_export]
-macro_rules! prlog {
-    () => {
-        $crate::cons_puts("\n")
-    };
-    ($s:expr) => {
-        $crate::cons_puts(concat!($s, "\n"))
-    };
-    ($s:expr, $($tt:tt)*) => {
-        $crate::cons_fmt(format_args!(concat!($s, "\n"), $($tt)*))
-    };
-}
-
 //#[no_mangle]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
-    let mut cons = Console {};
-
-    prlog!("picnicked!\r\n");
-
+    prlog!("picnicked!");
 
     if let Some(msg) = _info.location() {
-        write!(&mut cons, "Panic at: {}:{}\r\n", msg.file(), msg.line());
+        prlog!("Panic at: {}:{}", msg.file(), msg.line());
     } else {
         prlog!("recursive panic?");
     }
 
-    prlog!("fin!\r\n");
+    prlog!("fin!");
 
     unsafe {
         ohshit();
@@ -107,13 +64,12 @@ pub fn memcmp(s1 : *mut u8, s2 : *const u8, size : isize) -> isize
 
 #[no_mangle]
 pub fn _start(base_addr : u64, fdt_ptr : u64) -> ! {
-    let mut cons = Console {};
     let fdt;
 
     lpc::init_sio();
 
-    write!(&mut cons, "FDT at: {:016x}\r\n", fdt_ptr);
-    write!(&mut cons, "Base at: {:016x}\r\n", base_addr);
+    prlog!("FDT at: {:016x}", fdt_ptr);
+    prlog!("Base at: {:016x}", base_addr);
 
     unsafe {
         fdt = FDT::from_raw(fdt_ptr as *const u8).unwrap();
@@ -123,7 +79,7 @@ pub fn _start(base_addr : u64, fdt_ptr : u64) -> ! {
         let sn = n.size_cells();
         let an = n.address_cells();
 
-        write!(&mut cons, "node: {} [{},{}]\r\n", n.name(), an, sn);
+        prlog!("node: {} [{},{}]", n.name(), an, sn);
 
         for prop in n.properties() {
             if prop.name() == "reg" && sn > 0 && an > 0 {
@@ -140,13 +96,13 @@ pub fn _start(base_addr : u64, fdt_ptr : u64) -> ! {
                     addr |= prop.cell(i as usize).unwrap_or(0_u32) as u64;
                 }
 
-                write!(&mut cons, "\treg: [{},{}] = [{:016x}, {:016x}]\r\n", sn, an, addr, size);
+                prlog!("\treg: [{},{}] = [{:016x}, {:016x}]", sn, an, addr, size);
             }
-            write!(&mut cons, "\tprop: {}\r\n", prop.name());
+            prlog!("\tprop: {}", prop.name());
         }
     }
 
-    panic!("shit!!!\r\n");
+    panic!("shit!!!");
 }
 
 // Declaration of the global memory allocator
