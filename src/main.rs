@@ -24,7 +24,7 @@ extern {
 
 struct Console;
 
-fn prlog(s : &str) {
+fn cons_puts(s : &str) {
     for c in s.bytes() {
             lpc::lpc_outb(0x3f8, c);
     }
@@ -32,10 +32,31 @@ fn prlog(s : &str) {
 
 impl fmt::Write for Console {
     fn write_str(&mut self, s : &str) -> Result<(), fmt::Error> {
-        prlog(s);
+        cons_puts(s);
 
         Ok(())
     }
+}
+
+fn cons_fmt(args : fmt::Arguments) {
+	let mut cons = Console {};
+
+	write!(&mut cons, "{}", args);
+}
+
+
+// ripped from https://docs.rs/cortex-m-semihosting/0.3.4/src/cortex_m_semihosting/macros.rs.html#35-42
+#[macro_export]
+macro_rules! prlog {
+    () => {
+        $crate::cons_puts("\n")
+    };
+    ($s:expr) => {
+        $crate::cons_puts(concat!($s, "\n"))
+    };
+    ($s:expr, $($tt:tt)*) => {
+        $crate::cons_fmt(format_args!(concat!($s, "\n"), $($tt)*))
+    };
 }
 
 //#[no_mangle]
@@ -43,21 +64,21 @@ impl fmt::Write for Console {
 fn panic(_info: &PanicInfo) -> ! {
     let mut cons = Console {};
 
-        prlog("picnicked!\r\n");
+    prlog!("picnicked!\r\n");
 
 
-        if let Some(msg) = _info.location(){
-            write!(&mut cons, "Panic at: {}:{}\r\n", msg.file(), msg.line());
-        } else {
-            prlog("recursive panic?");
-        }
+    if let Some(msg) = _info.location() {
+        write!(&mut cons, "Panic at: {}:{}\r\n", msg.file(), msg.line());
+    } else {
+        prlog!("recursive panic?");
+    }
 
-        prlog("fin!\r\n");
+    prlog!("fin!\r\n");
 
-        unsafe {
-            ohshit();
-            intrinsics::abort()
-        }
+    unsafe {
+        ohshit();
+        intrinsics::abort()
+    }
 }
 
 #[no_mangle]
@@ -125,8 +146,7 @@ pub fn _start(base_addr : u64, fdt_ptr : u64) -> ! {
         }
     }
 
-
-    loop{};
+    panic!("shit!!!\r\n");
 }
 
 // Declaration of the global memory allocator
