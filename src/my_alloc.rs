@@ -17,13 +17,14 @@ unsafe impl GlobalAlloc for BumpPointerAlloc {
             let head = self.head.get();
 
             let align = layout.align();
-            let res = *head % align;
-            let start = if res == 0 { *head } else { *head + align - res };
-            if start + align > self.end {
+            let size = layout.size();
+
+            let start = (*head + align) & !(align - 1);
+            if start + size > self.end {
                 // a null pointer signal an Out Of Memory condition
                 ptr::null_mut()
             } else {
-                *head = start + align;
+                *head = start + size;
                 start as *mut u8
             }
     }
