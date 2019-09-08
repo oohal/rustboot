@@ -25,6 +25,7 @@ entry_point:
 	mr 	r31,r3
 // save the FDT pointer
 
+	li r1,0 // stick our stack at 1GB, because why not
 	lis r1,0x1000 // stick our stack at 1GB, because why not
 
 	// figure out the run address

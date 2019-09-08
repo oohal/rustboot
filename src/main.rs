@@ -1,9 +1,11 @@
 #![feature(lang_items)]
 #![feature(core_intrinsics)]
+#![feature(alloc_error_handler)]
 #![no_std]
 #![no_main]
 
 extern crate fdt;
+extern crate alloc;
 
 use core::intrinsics;
 use core::panic::PanicInfo;
@@ -18,7 +20,12 @@ extern {
     fn ohshit();
 }
 
-//#[no_mangle]
+
+#[alloc_error_handler]
+fn oom_panic(_: core::alloc::Layout) -> ! {
+    panic!("oom motherfucker!");
+}
+
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     prlog!("picnicked!");
@@ -38,7 +45,7 @@ fn panic(_info: &PanicInfo) -> ! {
 }
 
 #[no_mangle]
-pub fn memcpy(dst : *mut u8, src : *const u8, size : isize)
+pub extern "C" fn memcpy(dst : *mut u8, src : *const u8, size : isize)
 {
     unsafe {
         for i in 0..size {
@@ -48,7 +55,7 @@ pub fn memcpy(dst : *mut u8, src : *const u8, size : isize)
 }
 
 #[no_mangle]
-pub fn memset(s : *mut u8, val : u8, size : isize) -> *mut u8
+pub extern "C" fn memset(s : *mut u8, val : u8, size : isize) -> *mut u8
 {
     unsafe {
         for i in 0..size {
@@ -60,7 +67,7 @@ pub fn memset(s : *mut u8, val : u8, size : isize) -> *mut u8
 }
 
 #[no_mangle]
-pub fn memcmp(s1 : *mut u8, s2 : *const u8, size : isize) -> isize
+pub extern "C" fn memcmp(s1 : *mut u8, s2 : *const u8, size : isize) -> isize
 {
     unsafe {
         for i in 0..size {
@@ -76,7 +83,15 @@ pub fn memcmp(s1 : *mut u8, s2 : *const u8, size : isize) -> isize
 #[no_mangle]
 pub fn bcmp(s1 : *mut u8, s2 : *const u8, size : isize) -> isize
 {
-    return memcmp(s1, s2, size);
+    unsafe {
+        for i in 0..size {
+            if *s1.offset(i) != *s2.offset(i) {
+                return (*s1.offset(i) - *s2.offset(i)) as isize
+            }
+        }
+    }
+
+    return 0
 }
 
 #[no_mangle]
