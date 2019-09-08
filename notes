@@ -1,0 +1,19 @@
+we're doing an indirect function call. what function is it trying to call?
+
+0000000000012c00 .got
+
+Turned out I was screwing up the relocations. Since we enter at 0x10 rather
+than 0x0 the ABS address was off by 0x10 and the relocations applied
+incorrectly. Fixing that sorted it.
+
+Hmm, need to add default_features = false to the dependency line of most rust
+crates to prevent pulling in std
+
+
+--
+
+todo list:
+
+1. allocator?
+2. unflattened DT?
+
