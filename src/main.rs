@@ -48,8 +48,11 @@ fn panic(_info: &PanicInfo) -> ! {
 pub extern "C" fn memcpy(dst : *mut u8, src : *const u8, size : isize)
 {
     unsafe {
-        for i in 0..size {
+        let mut i = 0_isize;
+
+        while i <= size {
             *dst.offset(i) = *src.offset(i);
+            i += 1;
         }
     }
 }
