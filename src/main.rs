@@ -48,6 +48,18 @@ pub fn memcpy(dst : *mut u8, src : *const u8, size : isize)
 }
 
 #[no_mangle]
+pub fn memset(s : *mut u8, val : u8, size : isize) -> *mut u8
+{
+    unsafe {
+        for i in 0..size {
+            *s.offset(i) = val
+        }
+    }
+
+    return s
+}
+
+#[no_mangle]
 pub fn memcmp(s1 : *mut u8, s2 : *const u8, size : isize) -> isize
 {
     unsafe {
@@ -59,6 +71,12 @@ pub fn memcmp(s1 : *mut u8, s2 : *const u8, size : isize) -> isize
     }
 
     return 0
+}
+
+#[no_mangle]
+pub fn bcmp(s1 : *mut u8, s2 : *const u8, size : isize) -> isize
+{
+    return memcmp(s1, s2, size);
 }
 
 #[no_mangle]
